@@ -1,17 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { Tag, Product } = require('../../models');
+const { Tag, Product, ProductTag } = require('../../models');
 
 // Route: GET /api/tags
 // Description: Fetch all tags along with their associated products
 router.get('/', async (req, res) => {
   try {
     const tagsWithProducts = await Tag.findAll({
-      include: [{ model: Product }],
+      include: [{ model: Product, through: ProductTag, as: 'product_tags' }],
     });
     res.status(200).json(tagsWithProducts);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json(err.message);
   }
 });
 
@@ -21,7 +21,7 @@ router.get('/:id', async (req, res) => {
   try {
     const tagId = req.params.id;
     const tagWithProducts = await Tag.findByPk(tagId, {
-      include: [{ model: Product }],
+      include: [{ model: Product, through: ProductTag, as: 'product_tags' }],
     });
 
     if (!tagWithProducts) {
@@ -58,7 +58,7 @@ router.put('/:id', async (req, res) => {
         },
       }
     );
-    res.status(200).json(updatedTagData);
+    res.status(200).json({message: 'Tag updated successfully'});
   } catch (err) {
     res.status(400).json(err);
   }
@@ -80,7 +80,7 @@ router.delete('/:id', async (req, res) => {
       return;
     }
 
-    res.status(200).json(deletedTagData);
+    res.status(200).json({message: 'Tag deleted successfully'});
   } catch (err) {
     res.status(500).json(err);
   }
